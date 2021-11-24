@@ -1,0 +1,1 @@
+# aws-lambda-otel-example
