@@ -3,12 +3,14 @@ import * as cdk from '@aws-cdk/core';
 import * as iam from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as lambdaPython from '@aws-cdk/aws-lambda-python';
+import { Namespace } from '../constants/config';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const fn = new lambdaPython.PythonFunction(this, 'LambdaFunction', {
+      functionName: `${Namespace}OpenTelemetryTest`,
       entry: path.resolve(__dirname, '..', 'functions'),
       runtime: lambda.Runtime.PYTHON_3_8,
       index: 'index.py',
