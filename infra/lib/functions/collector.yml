@@ -1,0 +1,22 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  logging:
+  awsxray:
+  otlp:
+    endpoint: ingest.lightstep.com:443
+    headers: {"lightstep-access-token": "PASTE_YOUR_LIGHTSTEP_ACCESS_TOKEN"}
+
+service:
+  extensions:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [awsxray,otlp]
+    metrics:
+      receivers: [otlp]
+      exporters: [logging]
