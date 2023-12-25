@@ -2,21 +2,22 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: localhost:4317
       http:
+        endpoint: localhost:4318
 
 exporters:
   logging:
   awsxray:
-  otlp:
-    endpoint: ingest.lightstep.com:443
-    headers: {"lightstep-access-token": "PASTE_YOUR_LIGHTSTEP_ACCESS_TOKEN"}
 
 service:
-  extensions:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [awsxray,otlp]
+      exporters: [awsxray]
     metrics:
       receivers: [otlp]
       exporters: [logging]
+  telemetry:
+    metrics:
+      address: localhost:8888

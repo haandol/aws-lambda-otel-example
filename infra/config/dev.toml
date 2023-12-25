@@ -1,0 +1,6 @@
+[app]
+ns="LambdaOtelExample"
+stage="Dev"
+
+[aws]
+region="ap-northeast-2"

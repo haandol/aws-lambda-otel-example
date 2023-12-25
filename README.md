@@ -1,12 +1,12 @@
 # AWS Lambda Opentelemetry Example
 
-This repository is an example of collecting telemetry from AWS Lambda and exporting to LightStep
+This repository is an example of collecting telemetry from AWS Lambda and exporting to AWS X-Ray.
 
 # Prerequisites
 
 - awscli
-- Python 3.8
-- Nodejs 12
+- Python 3.11+
+- Nodejs 16+
 - AWS Account and Locally configured AWS credential
 
 # Installation
@@ -18,34 +18,24 @@ Deploying CDK provisions below infrastructure on your AWS account
 Install dependencies
 
 ```bash
-$ cd infra
-$ pip install -r lib/functions/requirements.txt -t lib/functions
+$ npm i -g cdk@2.116.1
 ```
-
-## Setup LightStep
-
-Login LightStep
-
-visit settings
-
-copy AccessToken to clipboard
-
-paste it on [**collector.yml**](lib/functions/collector.yml)
 
 ## Provision Infrastructure
-
-Install project dependencies
-
-```bash
-$ npm i
-```
 
 Install cdk in global context and run `cdk init` if you did not initailize cdk yet.
 
 ```bash
-$ npm i -g cdk@1.134.0
+$ cd infra
+$ npm i
 $ cdk init
 $ cdk bootstrap
+```
+
+copy [infra/config/dev.toml](./infra/config/dev.toml) to `.toml`.
+
+```bash
+$ cp config/dev.toml .toml
 ```
 
 Deploy infrastructure using CDK on AWS
@@ -56,6 +46,6 @@ $ cdk deploy "*" --require-approval never
 
 # Usage
 
-Invoke lambda function few times
+Invoke lambda function few times via AWS Console or CLI
 
-and visit LightStep Service Discovery Dashboard.
+and visit AWS X-Ray Dashboard.

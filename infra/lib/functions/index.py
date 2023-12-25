@@ -1,6 +1,6 @@
 import json
 import requests
-from opentelemetry import trace, baggage
+from opentelemetry import trace
 
 tracer = trace.get_tracer(__name__)
 
@@ -15,7 +15,6 @@ def handler(event, context):
         requests.get("https://aws.amazon.com/")
 
     with tracer.start_as_current_span("error span") as span:
-        span.set_attribute("projectID", baggage.get_baggage("projectID"))
         span.add_event("event message", {"event_attributes": 1})
 
         try:
@@ -23,5 +22,6 @@ def handler(event, context):
         except ZeroDivisionError as err:
             span.record_exception(err)
             print("caught zero division error")
+            raise err
 
     return "ok"
