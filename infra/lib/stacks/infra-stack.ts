@@ -15,7 +15,6 @@ export class InfraStack extends cdk.Stack {
       architecture: lambda.Architecture.ARM_64,
       environment: {
         AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
-        OPENTELEMETRY_COLLECTOR_CONFIG_FILE: '/var/task/collector.yml',
       },
       layers: [
         // https://aws-otel.github.io/docs/getting-started/lambda/lambda-python
