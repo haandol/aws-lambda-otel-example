@@ -18,13 +18,10 @@ def handler(event, context):
         span.set_attribute("http.url", url)
 
     with tracer.start_span("devide zero") as span:
-        span.add_event("event message", {"event_attributes": 1})
-
         try:
             1 / 0
         except ZeroDivisionError as err:
             span.record_exception(err)
-            print("caught zero division error")
             raise err
 
     return "ok"

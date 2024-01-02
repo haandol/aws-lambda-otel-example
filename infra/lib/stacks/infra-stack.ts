@@ -11,7 +11,7 @@ export class InfraStack extends cdk.Stack {
 
     const fn = new lambdaPython.PythonFunction(this, 'LambdaFunction', {
       entry: path.resolve(__dirname, '..', 'functions'),
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_12,
       architecture: lambda.Architecture.ARM_64,
       environment: {
         AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
