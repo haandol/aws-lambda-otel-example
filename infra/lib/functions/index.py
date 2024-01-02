@@ -24,6 +24,7 @@ def handler(event, context):
             1 / 0
         except ZeroDivisionError as err:
             span.record_exception(err)
+            span.set_status(trace.StatusCode.ERROR, "ZeroDivisionError")
             return {
                 "statusCode": 500,
                 "body": json.dumps({
