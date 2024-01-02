@@ -25,6 +25,7 @@ export class InfraStack extends cdk.Stack {
         ),
       ],
       tracing: lambda.Tracing.ACTIVE,
+      timeout: cdk.Duration.seconds(10),
     });
     fn.addToRolePolicy(
       new iam.PolicyStatement({
