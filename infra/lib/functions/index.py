@@ -12,7 +12,9 @@ def handler(event, context):
     current_span.set_attribute("http.route", "some_route")
 
     with tracer.start_as_current_span("server_span") as span:
-        requests.get("https://aws.amazon.com/")
+        requests.get("https://aws.amazon.com/", {
+            'timeout': 1,
+        })
 
     with tracer.start_as_current_span("error span") as span:
         span.add_event("event message", {"event_attributes": 1})

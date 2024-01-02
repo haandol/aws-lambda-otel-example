@@ -11,23 +11,21 @@ export class InfraStack extends cdk.Stack {
 
     const fn = new lambdaPython.PythonFunction(this, 'LambdaFunction', {
       entry: path.resolve(__dirname, '..', 'functions'),
-      runtime: lambda.Runtime.PYTHON_3_12,
+      runtime: lambda.Runtime.PYTHON_3_11,
       architecture: lambda.Architecture.ARM_64,
-      tracing: lambda.Tracing.ACTIVE,
+      environment: {
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
+        OPENTELEMETRY_COLLECTOR_CONFIG_FILE: '/var/task/collector.yml',
+      },
       layers: [
         // https://aws-otel.github.io/docs/getting-started/lambda/lambda-python
         lambda.LayerVersion.fromLayerVersionArn(
           this,
           `OtelLayer`,
-          `arn:aws:lambda:${
-            cdk.Stack.of(this).region
-          }:901920570463:layer:aws-otel-python-arm64-ver-1-20-0:3`
+          `arn:aws:lambda:${this.region}:901920570463:layer:aws-otel-python-arm64-ver-1-21-0:1`
         ),
       ],
-      environment: {
-        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
-        OPENTELEMETRY_COLLECTOR_CONFIG_FILE: '/var/task/collector.yml',
-      },
+      tracing: lambda.Tracing.ACTIVE,
     });
     fn.addToRolePolicy(
       new iam.PolicyStatement({
