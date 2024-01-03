@@ -29,7 +29,7 @@ func HelloWorldController(c *gin.Context) {
 	res, err := HelloWorldService(ctx)
 	if err != nil {
 		msg := "failed to say hello world"
-		instrument.RecordError(logger, span, err, msg)
+		instrument.RecordErrorWithMessage(ctx, logger, span, err, msg)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": msg,
 		})
@@ -55,7 +55,7 @@ func HelloWorldService(ctx context.Context) (int, error) {
 	url := "https://www.google.com"
 	resp, err := makeRequest(ctx, url)
 	if err != nil {
-		instrument.RecordError(logger, span, err, "failed to make request")
+		instrument.RecordErrorWithMessage(ctx, logger, span, err, "failed to make request")
 		return 0, err
 	}
 
@@ -78,11 +78,11 @@ func makeRequest(ctx context.Context, url string) (*http.Response, error) {
 
 	resp, err := otelhttp.Get(ctx, url)
 	if err != nil {
-		instrument.RecordError(logger, span, err, "failed to make request")
+		instrument.RecordErrorWithMessage(ctx, logger, span, err, "failed to make request")
 		return nil, err
 	}
 
-	instrument.HTTPResponseCode(span, resp.StatusCode)
+	instrument.HTTPResponseCode(ctx, span, resp.StatusCode)
 
 	return resp, err
 }
