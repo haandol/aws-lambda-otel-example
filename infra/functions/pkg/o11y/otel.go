@@ -172,14 +172,6 @@ func GetXrayTraceID(traceID string) string {
 	return fmt.Sprintf("1-%s-%s", traceID[0:8], traceID[8:])
 }
 
-func AttrString(k, v string) attribute.KeyValue {
-	return attribute.String(k, v)
-}
-
-func AttrInt(k string, v int) attribute.KeyValue {
-	return attribute.Int(k, v)
-}
-
 func GetStatus(err error) (code codes.Code, msg string) {
 	code = codes.Ok
 	if err != nil {
