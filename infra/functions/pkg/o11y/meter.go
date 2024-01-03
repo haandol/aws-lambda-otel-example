@@ -7,7 +7,7 @@ import (
 
 	"go.opentelemetry.io/contrib/detectors/aws/lambda"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/metric"
 	noopmetric "go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -16,9 +16,9 @@ import (
 func initMetricProvider() ShutdownFunc {
 	ctx := context.Background()
 
-	exporter, err := otlpmetrichttp.New(
+	exporter, err := otlpmetricgrpc.New(
 		ctx,
-		otlpmetrichttp.WithInsecure(),
+		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
 		log.Printf("failed to create new exporter: %v", err)
