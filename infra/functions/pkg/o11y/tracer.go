@@ -23,16 +23,16 @@ func initTracer() ShutdownFunc {
 	if err != nil {
 		log.Printf("error creating tracer provider: %v", err)
 		otel.SetTracerProvider(nooptrace.NewTracerProvider())
+		otel.SetTextMapPropagator(xray.Propagator{})
+		tracer = otel.Tracer("composebold")
 		return func(ctx context.Context) error { return nil }
+	} else {
+		tracerProvider = tp
+		otel.SetTracerProvider(tp)
+		otel.SetTextMapPropagator(xray.Propagator{})
+		tracer = otel.Tracer("composebold")
+		return tp.Shutdown
 	}
-	tracerProvider = tp
-
-	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(xray.Propagator{})
-
-	tracer = otel.Tracer("composebold")
-
-	return tp.Shutdown
 }
 
 func SpanFromContext(ctx context.Context) trace.Span {
@@ -119,5 +119,9 @@ func GetStatus(err error) (code codes.Code, msg string) {
 }
 
 func InstrumentHandler(handlerFunc interface{}) interface{} {
-	return otellambda.InstrumentHandler(handlerFunc, xrayconfig.WithRecommendedOptions(tracerProvider)...)
+	if tracerProvider == nil {
+		return otellambda.InstrumentHandler(handlerFunc)
+	} else {
+		return otellambda.InstrumentHandler(handlerFunc, xrayconfig.WithRecommendedOptions(tracerProvider)...)
+	}
 }
