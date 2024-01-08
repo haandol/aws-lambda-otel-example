@@ -34,13 +34,7 @@ export class InfraStack extends cdk.Stack {
     });
     fn.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['xray:*'],
-        resources: ['*'],
-      })
-    );
-    fn.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ['cloudwatch:PutMetricData'],
+        actions: ['xray:*', 'cloudwatch:PutMetricData', 's3:GetObject'],
         resources: ['*'],
       })
     );
