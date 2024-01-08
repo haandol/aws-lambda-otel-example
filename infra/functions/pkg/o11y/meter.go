@@ -16,30 +16,38 @@ import (
 func initMetricProvider() ShutdownFunc {
 	ctx := context.Background()
 
+	mp, err := newMetricProvider(ctx)
+	// use noop metric provider if xray is not available
+	if err != nil {
+		log.Printf("failed to create metric provider: %v", err)
+		otel.SetMeterProvider(noopmetric.NewMeterProvider())
+		return func(ctx context.Context) error { return nil }
+	}
+	otel.SetMeterProvider(mp)
+
+	return mp.Shutdown
+}
+
+func newMetricProvider(ctx context.Context) (*sdkmetric.MeterProvider, error) {
 	exporter, err := otlpmetricgrpc.New(
 		ctx,
 		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Printf("failed to create new exporter: %v", err)
-		otel.SetMeterProvider(noopmetric.NewMeterProvider())
-		return func(ctx context.Context) error { return nil }
+		return nil, err
 	}
 
 	resourceDetector := lambda.NewResourceDetector()
 	resource, err := resourceDetector.Detect(ctx)
 	if err != nil {
-		// just use nil-resource if failed to detect resource
-		log.Printf("Failed to create new resource: %v", err)
+		return nil, err
 	}
 
 	provider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(resource),
-		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(1*time.Second))),
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(time.Second*1))),
 	)
-	otel.SetMeterProvider(provider)
-
-	return exporter.Shutdown
+	return provider, nil
 }
 
 func NewIntCounter(name string) (metric.Int64Counter, error) {

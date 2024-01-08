@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log"
 
+	lambdadetector "go.opentelemetry.io/contrib/detectors/aws/lambda"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-lambda-go/otellambda"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-lambda-go/otellambda/xrayconfig"
 	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	nooptrace "go.opentelemetry.io/otel/trace/noop"
@@ -19,20 +22,41 @@ import (
 func initTracer() ShutdownFunc {
 	ctx := context.Background()
 
-	tp, err := xrayconfig.NewTracerProvider(ctx)
+	tp, err := newTracerProvider(ctx)
+	// use noop tracer if xray is not available
 	if err != nil {
 		log.Printf("error creating tracer provider: %v", err)
 		otel.SetTracerProvider(nooptrace.NewTracerProvider())
 		otel.SetTextMapPropagator(xray.Propagator{})
 		tracer = otel.Tracer("composebold")
 		return func(ctx context.Context) error { return nil }
-	} else {
-		tracerProvider = tp
-		otel.SetTracerProvider(tp)
-		otel.SetTextMapPropagator(xray.Propagator{})
-		tracer = otel.Tracer("composebold")
-		return tp.Shutdown
 	}
+
+	tracerProvider = tp
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(xray.Propagator{})
+	tracer = otel.Tracer("composebold")
+	return tp.Shutdown
+}
+
+func newTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
+	exp, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	detector := lambdadetector.NewResourceDetector()
+	resource, err := detector.Detect(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return sdktrace.NewTracerProvider(
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithBatcher(exp),
+		sdktrace.WithIDGenerator(xray.NewIDGenerator()),
+		sdktrace.WithResource(resource),
+	), nil
 }
 
 func SpanFromContext(ctx context.Context) trace.Span {
